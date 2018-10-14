@@ -113,32 +113,47 @@ class ResNet(nn.Module):
                  layers,
                  sample_size,
                  sample_duration,
+                 stride = 2,
+                 stride_pool=2,
                  shortcut_type='B',
-                 num_classes=400):
+                 num_classes=400,
+                 include_top=True) :
         self.inplanes = 64
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv3d(
             3,
             64,
             kernel_size=7,
-            stride=(1, 2, 2),
+            stride=(1, stride, stride),
             padding=(3, 3, 3),
             bias=False)
         self.bn1 = nn.BatchNorm3d(64)
         self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool3d(kernel_size=(3, 3, 3), stride=2, padding=1)
+        self.maxpool = nn.MaxPool3d(kernel_size=(3, 3, 3), stride=stride_pool, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0], shortcut_type)
         self.layer2 = self._make_layer(
             block, 128, layers[1], shortcut_type, stride=2)
         self.layer3 = self._make_layer(
-            block, 256, layers[2], shortcut_type, stride=2)
+            block, 256, layers[2], shortcut_type, stride=stride)
         self.layer4 = self._make_layer(
-            block, 512, layers[3], shortcut_type, stride=2)
-        last_duration = int(math.ceil(sample_duration / 16))
-        last_size = int(math.ceil(sample_size / 32))
-        self.avgpool = nn.AvgPool3d(
-            (last_duration, last_size, last_size), stride=1)
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+            block, 512, layers[3], shortcut_type, stride=stride)
+
+        self.include_top = include_top
+        if include_top:
+            last_duration = int(math.ceil(sample_duration / 16))
+            last_size = int(math.ceil(sample_size / 32))
+            self.avgpool = nn.AvgPool3d(
+                (last_duration, last_size, last_size), stride=1)
+            self.fc = nn.Linear(512 * block.expansion, num_classes)
+#        else:
+#            self.out = nn.Sequential(
+#                    nn.Conv3d(
+#                        self.inplanes,
+#                        num_classes,
+#                        kernel_size=(10//stride_channels,1,1),
+#                        stride=stride,
+#                        bias=False))
+        
 
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
@@ -183,10 +198,14 @@ class ResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
 
-        x = self.avgpool(x)
+        if self.include_top:
+            x = self.avgpool(x)
 
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
+            x = x.view(x.size(0), -1)
+            x = self.fc(x)
+#        else:
+#            print(x.shape)
+#            x = self.out(x)
 
         return x
 
