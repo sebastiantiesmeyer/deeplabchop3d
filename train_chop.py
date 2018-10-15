@@ -57,7 +57,7 @@ os.path.join(data_path, 'test.log'),
 #torch.save(resnet_hybrid,'/home/sebastian/code/deeplabchop-3d/deeplabcut3d/deeplabchop/resnet_hybrid.pth',pickle_protocol=pickle.HIGHEST_PROTOCOL)
 
 data_path='/home/sebastian/Desktop/'
-batch_size=4
+batch_size=3
 path_val = None
 t_size = 10
 
@@ -91,7 +91,7 @@ opt.arch = 'resnet-101'
 opt.result_path = data_path
 opt.no_cuda=True
 opt.checkpoint=1
-train_generator =  generator.Generator(X, Y, batch_size, n_frames = 7, size_x = 350, size_y = 350)
+train_generator =  generator.Generator(X, Y, batch_size, n_frames = 5, size_x = 400, size_y = 400)
 resnet_hybrid.cuda()
 
 print('run')

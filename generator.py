@@ -39,9 +39,9 @@ class Generator(Dataset):
             
             n = self.idcs[self.idx]
             
-            scale=1+np.random.normal()/10
+            scale=0.8+np.random.normal()/10
             rotation=np.random.randint(4)#np.random.uniform()*2
-            translation = [([0,1,1,0][rotation])*self.X.shape[2],(([0,0,1,1][rotation]))*self.X.shape[3]]
+            translation = [([0,1,1,0][rotation])*self.X.shape[2]*scale,(([0,0,1,1][rotation]))*self.X.shape[3]*scale]
             translation[0]+=0 #np.random.randint(self.X.shape[2]-self.size_x)
             translation[1]+=0 #np.random.randint(self.X.shape[3]-self.size_y)
             rotation *= np.pi/2 +np.random.normal()/50
